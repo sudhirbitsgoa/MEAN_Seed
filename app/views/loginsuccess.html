@@ -1,0 +1,226 @@
+
+<div class="container billboard light">
+<style>
+input {
+  border: 1px solid rgb(46, 189, 235);
+  border-radius: 3px;
+  font-size: 1em;
+  outline: none;
+  padding: .2em .4em;
+  width: 60px;
+  text-align: center;
+}
+</style>
+<script src="https://cdn.webrtc-experiment.com/MediaStreamRecorder-v1.2.js" data-require="WhammyRecorder,MediaRecorder" data-scripts-dir="https://cdn.webrtc-experiment.com/msr/">
+</script>
+<script src="https://cdn.webrtc-experiment.com/msr/common/Cross-Browser-Declarations.js"></script><script src="https://cdn.webrtc-experiment.com/msr/VideoStreamRecorder/WhammyRecorder.js"></script><script src="https://cdn.webrtc-experiment.com/msr/VideoStreamRecorder/WhammyRecorderHelper.js"></script><script src="https://cdn.webrtc-experiment.com/msr/VideoStreamRecorder/lib/whammy.js"></script><script src="https://cdn.webrtc-experiment.com/msr/AudioStreamRecorder/MediaRecorder.js"></script>
+
+
+
+
+<div>
+  <label for="time-interval">Time Interval (milliseconds):</label>
+  <input type="text" id="time-interval" value="5000">
+
+  <label for="video-width">Video Width:</label>
+  <input type="text" id="video-width" value="320">
+
+  <label for="video-height">Video Height:</label>
+  <input type="text" id="video-height" value="240">
+
+  <button id="start-recording">Start Recording</button>
+  <button id="stop-recording" >Stop Recording</button>
+  <a href="#/videos">Videos</a>
+</div>
+<div id="videos-container">
+</div>
+<script>
+var mediaConstraints = { audio: !!navigator.mozGetUserMedia, video: true };
+document.querySelector('#start-recording').onclick = function() {
+  $("#stop-recording").show();
+  $("#start-recording").hide();
+  navigator.getUserMedia(mediaConstraints, onMediaSuccess, onMediaError);
+};
+
+document.querySelector('#stop-recording').onclick = function() {
+  $("#start-recording").show();
+  $("#stop-recording").hide();
+  mediaRecorder.stop();
+  videosContainer.removeChild(video);
+};
+
+
+$("#stop-recording").hide();
+var mediaRecorder,video;
+
+function onMediaSuccess(stream) {
+   video = document.createElement('video');
+
+  var videoWidth = document.getElementById('video-width').value || 320;
+  var videoHeight = document.getElementById('video-height').value || 240;
+
+  video = mergeProps(video, {
+    controls: true,
+    width: videoWidth,
+    height: videoHeight,
+    src: URL.createObjectURL(stream)
+  });
+  video.play();
+
+  videosContainer.appendChild(video);
+  videosContainer.appendChild(document.createElement('hr'));
+
+  mediaRecorder = new MediaStreamRecorder(stream);
+  mediaRecorder.mimeType = 'video/webm'; // this line is mandatory
+  mediaRecorder.videoWidth  = videoWidth;
+  mediaRecorder.videoHeight = videoHeight;
+  mediaRecorder.ondataavailable = function(blob) {
+    var a = document.createElement('a');
+    a.target = '_blank';
+    a.innerHTML = 'Open Recorded Video No. ' + (index++) + ' (Size: ' + bytesToSize(blob.size) + ') Time Length: ' + getTimeLength(timeInterval);
+
+    a.href = URL.createObjectURL(blob);
+    console.info("this si the blob",blob);
+    console.info("this is the data url",URL.createObjectURL(blob));
+    var reader = new window.FileReader();
+    reader.readAsDataURL(blob); 
+    var base64data;
+    reader.onloadend = function() {
+      base64data = reader.result;                
+      console.log(base64data );
+      var video = {
+        blob: blob,
+        dataURL: base64data
+      };
+      postFiles(null,video);
+    }
+    videosContainer.appendChild(a);
+    videosContainer.appendChild(document.createElement('hr'));
+  };
+
+  var timeInterval = document.querySelector('#time-interval').value;
+  if(timeInterval) timeInterval = parseInt(timeInterval);
+  else timeInterval = 5 * 1000;
+
+  // get blob after specific time interval
+  mediaRecorder.start(timeInterval);
+
+  document.querySelector('#stop-recording').disabled = false;
+}
+
+
+ // this function submits both audio/video or single recorded blob to nodejs server
+function postFiles(audio, video) {
+  // getting unique identifier for the file name
+  fileName = generateRandomString();
+
+  // this object is used to allow submitting multiple recorded blobs
+  var files = { };
+
+  if(video) {
+    files.video = {
+      name: fileName + '.' + video.blob.type.split('/')[1],
+      type: video.blob.type,
+      contents: video.dataURL
+    };
+  }
+
+  files.uploadOnlyAudio = !video;
+
+  
+
+  xhr('/upload', JSON.stringify(files), function(_fileName) {
+    var href = location.href.substr(0, location.href.lastIndexOf('/') + 1);
+    console.log("what is href I think this is the place i need to give the gridfs filename",href);
+  /*  videoElement.src = href + 'uploads/' + _fileName;
+    videoElement.play();
+    videoElement.muted = false;
+    videoElement.controls = true;
+
+    var h2 = document.createElement('h2');
+    h2.innerHTML = '<a href="' + videoElement.src + '">' + videoElement.src + '</a>';
+    document.body.appendChild(h2);*/
+  });
+
+  /*if(mediaStream) mediaStream.stop();*/
+}
+
+// XHR2/FormData
+function xhr(url, data, callback) {
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function() {
+    if (request.readyState == 4 && request.status == 200) {
+      callback(request.responseText);
+    }
+  };
+
+  // request.upload.onprogress = function(event) {
+  //  console.log("this event is triggered after the file is uploaded",event);
+  //  progressBar.max = event.total;
+  //  progressBar.value = event.loaded;
+  //  progressBar.innerHTML = 'Upload Progress ' + Math.round(event.loaded / event.total * 100) + "%";
+  // };
+
+  request.upload.onload = function() {
+    //percentage.style.display = 'none';
+    //progressBar.style.display = 'none';
+  };
+  request.open('POST', url);
+  request.send(data);
+}
+
+// generating random string
+function generateRandomString() {
+  if (window.crypto) {
+    var a = window.crypto.getRandomValues(new Uint32Array(3)),
+    token = '';
+    for (var i = 0, l = a.length; i < l; i++) token += a[i].toString(36);
+    return token;
+  } else {
+    return (Math.random() * new Date().getTime()).toString(36).replace( /\./g , '');
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+function onMediaError(e) {
+  console.error('media error', e);
+}
+
+var videosContainer = document.getElementById('videos-container');
+var index = 1;
+
+// below function via: http://goo.gl/B3ae8c
+function bytesToSize(bytes) {
+  var k = 1000;
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  if (bytes === 0) return '0 Bytes';
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(k)),10);
+  return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + sizes[i];
+}
+
+// below function via: http://goo.gl/6QNDcI
+function getTimeLength(milliseconds) {
+  var data = new Date(milliseconds);
+  return data.getUTCHours()+" hours, "+data.getUTCMinutes()+" minutes and "+data.getUTCSeconds()+" second(s)";
+}
+
+window.onbeforeunload = function() {
+  document.querySelector('#start-recording').disabled = false;
+};
+</script>
+
+
+
+
+</div>
