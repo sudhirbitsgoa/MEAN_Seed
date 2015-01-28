@@ -20,7 +20,7 @@ var mongoose = require('mongoose');
 var passport = require('passport');
 var expressValidator = require('express-validator');
 var connectAssets = require('connect-assets');
-
+var videoFiles = require("./models/videofiles.js");
 /**
  * Controllers (route handlers).
  */
@@ -47,10 +47,32 @@ mongoose.connect(secrets.db);
 mongoose.connection.on('error', function() {
   console.error('MongoDB Connection Error. Please make sure that MongoDB is running.');
 });
-
+var GridStore = require('mongodb').GridStore;
+var ObjectID = require('mongodb').ObjectID;
 /**
  * Express configuration.
  */
+/**
+ * just a hack to make it work and avoid authentication
+ */
+app.post('/upload',onRequest);
+app.get('/videos',function(req,res){
+   console.log("this is the rest");
+   videoFiles.find({},function(err,data){
+     res.json(data);
+   });
+})
+app.get('/videos/:id', function(req, res) {
+ console.log("req.params",req.params)
+ new GridStore(mongoose.connection.db, new ObjectID(req.params.id), null, 'r').open(function(err, GridFile) {
+   if(!GridFile) {
+     res.send(404,'Not Found');
+     return;
+   }
+   StreamGridFile(req, res, GridFile)
+ });
+});
+
 app.set('port', process.env.PORT || 3000);
 //app.set('views', path.join(__dirname, 'views'));
 //app.set('view engine', 'jade');
@@ -75,6 +97,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
+
+
+
 app.use(lusca({
   csrf: true,
   xframe: 'SAMEORIGIN',
@@ -84,6 +109,7 @@ app.use(function(req, res, next) {
   res.locals.user = req.user;
   next();
 });
+
 app.use(function(req, res, next) {
   if (/api/i.test(req.path)) req.session.returnTo = req.path;
   next();
@@ -200,5 +226,137 @@ app.use(errorHandler());
 app.listen(app.get('port'), function() {
   console.log('Express server listening on port %d in %s mode', app.get('port'), app.get('env'));
 });
+
+
+
+
+
+// Muaz Khan     - www.MuazKhan.com
+// MIT License   - www.WebRTC-Experiment.com/licence
+// Source Code   - github.com/muaz-khan/WebRTC-Experiment/tree/master/RecordRTC/RecordRTC-to-Nodejs
+
+
+handlers = require('./handlers'),
+router = require('./router'),
+handle = { };
+
+handle["/"] = handlers.home;
+handle["/home"] = handlers.home;
+handle["/upload"] = handlers.upload;
+handle._static = handlers.serveStatic;
+
+
+
+function respondWithHTTPCode(response, code) {
+    response.writeHead(code, { 'Content-Type': 'text/plain' });
+    response.end();
+}
+
+function routeRTC(handle, pathname, response, postData) {
+    var extension = pathname.split('.').pop();
+
+    var staticFiles = {
+        js: 'js',
+        gif: 'gif',
+        css: 'css',
+        //webm: 'webm',
+        mp4: 'mp4',
+        wav: 'wav',
+        ogg: 'ogg'
+    };
+    console.log(staticFiles[extension]);
+    if ('function' === typeof handle[pathname]) {
+        handle[pathname](response, postData);
+    } else if (staticFiles[extension]) {
+        handle._static(response, pathname, postData);
+    } else {
+        respondWithHTTPCode(response, 404);
+    }
+}
+
+
+var http = require('http'),
+    url = require('url');
+
+
+
+function onRequest(request, response) {
+    console.log("on request is called for every request");
+    var pathname = url.parse(request.url).pathname,
+        postData = '';
+
+    request.setEncoding('utf8');
+
+    request.addListener('data', function(postDataChunk) {
+        postData += postDataChunk;
+    });
+
+    request.addListener('end', function() {
+        routeRTC(handle, pathname, response, postData);
+    });
+}
+
+    //http.createServer(onRequest).listen(config.port);
+
+
+
+/*
+ *  I seriously hate to add all the code here
+ */
+
+ function StreamGridFile(req, res, GridFile) {
+   if(req.headers['range']) {
+
+     // Range request, partialle stream the file
+     console.log('Range Reuqest');
+     var parts = req.headers['range'].replace(/bytes=/, "").split("-");
+     var partialstart = parts[0];
+     var partialend = parts[1];
+
+     var start = parseInt(partialstart, 10);
+     var end = partialend ? parseInt(partialend, 10) : GridFile.length -1;
+     var chunksize = (end-start)+1;
+
+     console.log('Range ',start,'-',end);
+
+     res.writeHead(206, {
+       'Content-Range': 'bytes ' + start + '-' + end + '/' + GridFile.length,
+       'Accept-Ranges': 'bytes',
+       'Content-Length': chunksize,
+       'Content-Type': GridFile.contentType
+     });
+
+     // Set filepointer
+     GridFile.seek(start, function() {
+       // get GridFile stream
+       var stream = GridFile.stream(true);
+
+       // write to response
+       stream.on('data', function(buff) {
+         // count data to abort streaming if range-end is reached
+         // perhaps theres a better way?
+         start += buff.length;
+         if(start >= end) {
+           // enough data send, abort
+           GridFile.close();
+           res.end();
+         } else {
+           res.write(buff);
+         }
+       });
+     });
+
+   } else {
+
+     // stream back whole file
+     res.header('Content-Type', GridFile.contentType);
+     res.header('Content-Length', GridFile.length);
+     var stream = GridFile.stream(true);
+     stream.pipe(res);
+   }
+ }
+
+
+
 
 module.exports = app;

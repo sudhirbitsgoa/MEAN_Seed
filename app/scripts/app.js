@@ -50,12 +50,13 @@ angular
           // Make an AJAX call to check if the user is logged in
           $http.get('/loggedin').success(function(user){
             // Authenticated
-            if (user !== '0')
+            if (user !== '0'){
               $timeout(deferred.resolve, 0);
+            }
 
             // Not Authenticated
             else {
-              $rootScope.message = 'You need to log in.';
+              $rootScope  .message = 'You need to log in.';
               $timeout(function(){deferred.reject();}, 0);
               $location.url('/login');
             }
@@ -74,6 +75,7 @@ angular
             return promise.then(
               // Success: just return the response
               function(response){
+                console.log("what this responseinterceptors do ",response);
                 return response;
               }, 
               // Error: check the error status to get only the 401
@@ -87,10 +89,15 @@ angular
         });
 
         $stateProvider
-            .state('landing',{
-                url:'/',
+            .state('main',{
+                url:'/main',
                 templateUrl: 'views/main.html',
-                controller: 'MainCtrl'
+                controller: 'MainCtrl',
+                resolve : {
+                  loggedin : function(){
+                    console.log("just making this as landing page modified")
+                  }
+                }
             })
             .state('signin',{
                 url:'/signin',
@@ -103,7 +110,7 @@ angular
                 controller: 'LoginCtrl'
             })
             .state('loginSuccess',{
-                url:'/loginsuccess',
+                url:'/',
                 templateUrl: 'views/loginsuccess.html',
                 controller: 'LoginCtrl',
                 resolve: {
@@ -118,4 +125,7 @@ angular
                     loggedin: checkLoggedin
                 }
             });
+    })
+    .run(function($http,$cookies){
+      $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;  
     });

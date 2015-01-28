@@ -59,7 +59,9 @@
     "twit": "^1.1.19",
     "uglify-js": "^2.4.16",
     "validator": "^3.27.0",
-    "yui": "^3.18.1"
+    "yui": "^3.18.1",
+    "gridfs-stream": "~0.5.3",
+    "mongodb": "~1.4.29"
   },
   "devDependencies": {
     "blessed": "^0.0.37",
