@@ -52,28 +52,6 @@ var ObjectID = require('mongodb').ObjectID;
 /**
  * Express configuration.
  */
-/**
- * just a hack to make it work and avoid authentication
- */
-app.post('/upload',onRequest);
-app.delete('/videos/:id',videoController.deleteVideo);
-app.get('/videos',function(req,res){
-   console.log("this is the rest");
-   videoFiles.find({},function(err,data){
-     res.json(data);
-   });
-})
-app.get('/videos/:id', function(req, res) {
- console.log("req.params",req.params)
- new GridStore(mongoose.connection.db, new ObjectID(req.params.id), null, 'r').open(function(err, GridFile) {
-   if(!GridFile) {
-     res.send(404,'Not Found');
-     return;
-   }
-   StreamGridFile(req, res, GridFile)
- });
-});
-
 
 app.set('port', process.env.PORT || 3000);
 //app.set('views', path.join(__dirname, 'views'));
@@ -103,7 +81,7 @@ app.use(flash());
 
 
 app.use(lusca({
-  csrf: true,
+  csrf: false,
   xframe: 'SAMEORIGIN',
   xssProtection: true
 }));
@@ -117,6 +95,32 @@ app.use(function(req, res, next) {
   next();
 });
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }));
+
+
+
+/**
+ * just a hack to make it work and avoid authentication
+ */
+app.post('/upload',onRequest);
+app.delete('/videos/:id',videoController.deleteVideo);
+app.get('/videos',function(req,res){
+   console.log("this is the rest");
+   videoFiles.find({"metadata.userId":req.user._id},function(err,data){
+     res.json(data);
+   });
+})
+app.get('/videos/:id', function(req, res) {
+ console.log("req.params",req.params)
+ new GridStore(mongoose.connection.db, new ObjectID(req.params.id), null, 'r').open(function(err, GridFile) {
+   if(!GridFile) {
+     res.send(404,'Not Found');
+     return;
+   }
+   StreamGridFile(req, res, GridFile)
+ });
+});
+
+
 
 /**
  * Primary app routes.
@@ -294,6 +298,7 @@ function onRequest(request, response) {
     });
 
     request.addListener('end', function() {
+        response.user = request.user;
         routeRTC(handle, pathname, response, postData);
     });
 }

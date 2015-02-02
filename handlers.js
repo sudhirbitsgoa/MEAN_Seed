@@ -58,13 +58,14 @@ function _upload(response, file) {
     }
 
     file.contents = file.contents.split(',').pop();
+    var filename = fileRootName+fileExtension;
 
     fileBuffer = new Buffer(file.contents, "base64");
     var gfs = Grid( conn.db, mongoose.mongo );
     var target = gfs.createWriteStream({
       filename: filePath
     });
-    var gridStore = new GridStore(conn.db, new ObjectID(),filePath, "w");
+    var gridStore = new GridStore(conn.db, new ObjectID(),filename, "w",{metadata:{userId:response.user._id}});
 
     gridStore.open(function(err, gridStore) {
       // Write some content to the file
