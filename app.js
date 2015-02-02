@@ -28,7 +28,7 @@ var homeController = require('./controllers/home');
 var userController = require('./controllers/user');
 var apiController = require('./controllers/api');
 var contactController = require('./controllers/contact');
-
+var videoController = require('./controllers/videos')
 /**
  * API keys and Passport configuration.
  */
@@ -56,6 +56,7 @@ var ObjectID = require('mongodb').ObjectID;
  * just a hack to make it work and avoid authentication
  */
 app.post('/upload',onRequest);
+app.delete('/videos/:id',videoController.deleteVideo);
 app.get('/videos',function(req,res){
    console.log("this is the rest");
    videoFiles.find({},function(err,data){
@@ -72,6 +73,7 @@ app.get('/videos/:id', function(req, res) {
    StreamGridFile(req, res, GridFile)
  });
 });
+
 
 app.set('port', process.env.PORT || 3000);
 //app.set('views', path.join(__dirname, 'views'));

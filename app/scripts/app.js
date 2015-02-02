@@ -39,18 +39,18 @@ angular
   })*/
     .config(function($stateProvider, $locationProvider, $httpProvider,$urlRouterProvider){
         $urlRouterProvider.otherwise('/');
-
+        
         //================================================
         // Check if the user is connected
         //================================================
-        var checkLoggedin = function($q, $timeout, $http, $location, $rootScope){
+        var checkLoggedin = function($q, $timeout, $http, $location, $rootScope,$cookies){
           // Initialize a new promise
           var deferred = $q.defer();
 
           // Make an AJAX call to check if the user is logged in
           $http.get('/loggedin').success(function(user){
             // Authenticated
-            if (user !== '0'){
+            if (user !== '0'){  
               $timeout(deferred.resolve, 0);
             }
 
@@ -126,6 +126,9 @@ angular
                 }
             });
     })
-    .run(function($http,$cookies){
-      $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;  
+    .run(function($http,$cookies,$rootScope){
+      $rootScope.rootUrl = "http://localhost:3000"
+      $http.defaults.headers.common['X-CSRFToken'] = $cookies.csrftoken;
+      console.log("this is csrf token afa",$cookies.csrftoken);
+      $http.defaults.headers['X-CSRFToken'] = $cookies.csrftoken;  
     });

@@ -32,6 +32,7 @@ input {
   <button id="stop-recording" >Stop Recording</button>
   <a href="#/videos">Videos</a>
   <a href="#/main">Home</a>
+  <a href="/logout">Logout</a>
 </div>
 <div id="videos-container">
 </div>
@@ -69,7 +70,7 @@ function onMediaSuccess(stream) {
   video.play();
 
   videosContainer.appendChild(video);
-  videosContainer.appendChild(document.createElement('hr'));
+  //videosContainer.appendChild(document.createElement('hr'));
 
   mediaRecorder = new MediaStreamRecorder(stream);
   mediaRecorder.mimeType = 'video/webm'; // this line is mandatory
@@ -95,8 +96,8 @@ function onMediaSuccess(stream) {
       };
       postFiles(null,video);
     }
-    videosContainer.appendChild(a);
-    videosContainer.appendChild(document.createElement('hr'));
+    //videosContainer.appendChild(a);
+    //videosContainer.appendChild(document.createElement('hr'));
   };
 
   var timeInterval = document.querySelector('#time-interval').value;
@@ -113,8 +114,8 @@ function onMediaSuccess(stream) {
  // this function submits both audio/video or single recorded blob to nodejs server
 function postFiles(audio, video) {
   // getting unique identifier for the file name
-  fileName = generateRandomString();
-
+  fileName = getFormattedDate() || generateRandomString();
+  fileName = "video_" + fileName;
   // this object is used to allow submitting multiple recorded blobs
   var files = { };
 
@@ -184,13 +185,12 @@ function generateRandomString() {
 
 
 
+function getFormattedDate() {
+    var date = new Date();
+    var str = date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate() + " " +  date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 
-
-
-
-
-
-
+    return str;
+}
 
 
 

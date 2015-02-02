@@ -19,18 +19,5 @@ angular.module('weatherAppApp')
             })
 
         };
-
     })
-    .factory('addUser',function($http){
-        return {
-            nodeUrl:"http://localhost:8000/api/addUser",
-            addUser:function(data){
-                var url = this.nodeUrl;
-                return $http({method:"POST",url:this.nodeUrl,data:data}).success(function(data){
-                    return data;
-                }).error(function(err){
-                    return (err);
-                });
-            }
-        };
-    })
+    
