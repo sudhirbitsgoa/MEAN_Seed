@@ -14,7 +14,7 @@ angular.module('weatherAppApp')
   })
   .factory('getVideos',function($http,$rootScope,$cookies){
     return {
-      nodeUrl:"http://localhost:3000/videos",
+      nodeUrl:$rootScope.rootUrl+"/videos",
       getVideos:function(data){
         var url = this.nodeUrl;
         return $http({method:"GET",url:this.nodeUrl}).success(function(data){

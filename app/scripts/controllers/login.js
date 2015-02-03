@@ -41,9 +41,10 @@ angular.module('weatherAppApp')
             }
         }
     })
-    .factory("loginService", function ($http) {
+    .factory("loginService", function ($http,$rootScope) {
         return {
-            nodeUrl: "http://localhost:3000/api/loginUser",
+
+            nodeUrl: $rootScope.rootUrl+"/api/loginUser",
             loginUser: function (data) {
                 var url = this.nodeUrl;
                 return $http({method: "POST", url: this.nodeUrl, data: data}).success(function (data) {
@@ -56,23 +57,4 @@ angular.module('weatherAppApp')
             }
         }
     })
-    .controller('VideosCtrl', function ($scope,$http,$location, getVideos) {
-
-      getVideos.getVideos().then(function(data){
-        console.log("videos data",data);
-        $scope.videos = data.data;
-      })
-    })
-    .factory('getVideos',function($http){
-      return {
-        nodeUrl:"http://localhost:3000/videos",
-        getVideos:function(data){
-          var url = this.nodeUrl;
-          return $http({method:"GET",url:this.nodeUrl}).success(function(data){
-            return data;
-          }).error(function(err){
-            return (err);
-          });
-        }
-      };
-    })
+    
