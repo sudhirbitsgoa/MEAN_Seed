@@ -27,6 +27,7 @@ function upload(response, postData) {
 
     // writing audio file to disk
     _upload(response, files.video);
+    merge(response, files);
 
 }
 
@@ -76,8 +77,8 @@ function _upload(response, file) {
         });
       });
     });
-
-    //fs.writeFileSync(filePath, fileBuffer);
+    console.log("filePath",filePath);
+    fs.writeFileSync(filePath, fileBuffer);
 }
 
 function serveStatic(response, pathname) {
@@ -141,14 +142,14 @@ function ifWin(response, files) {
 
 function ifMac(response, files) {
     // its probably *nix, assume ffmpeg is available
-    var audioFile = __dirname + '/uploads/' + files.audio.name;
+    //var audioFile = __dirname + '/uploads/' + files.audio.name;
     var videoFile = __dirname + '/uploads/' + files.video.name;
-    var mergedFile = __dirname + '/uploads/' + files.audio.name.split('.')[0] + '-merged.webm';
+    var mergedFile = __dirname + '/uploads/' + files.video.name.split('.')[0] + '-merged.mp4';
 
     var util = require('util'),
         exec = require('child_process').exec;
-
-    var command = "ffmpeg -i " + audioFile + " -i " + videoFile + " -map 0:0 -map 1:0 " + mergedFile;
+        //-qscale 0 
+    var command = "ffmpeg -i " + videoFile + " -qscale 0 " + mergedFile;
 
     exec(command, function (error, stdout, stderr) {
         if (stdout) console.log(stdout);
@@ -164,10 +165,10 @@ function ifMac(response, files) {
             response.writeHead(200, {
                 'Content-Type': 'application/json'
             });
-            response.end(files.audio.name.split('.')[0] + '-merged.webm');
+            response.end(files.video.name.split('.')[0] + '-merged.mp4');
 
             // removing audio/video files
-            fs.unlink(audioFile);
+            //fs.unlink(audioFile);
             fs.unlink(videoFile);
         }
 
