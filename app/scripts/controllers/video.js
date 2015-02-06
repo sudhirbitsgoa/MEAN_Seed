@@ -7,8 +7,14 @@ angular.module('weatherAppApp')
     });
 
     $scope.deleteVideo = function(id){
-      getVideos.deleteVideo(id);
+      if(!confirm("press ok to delete"))
+      return;
 
+      getVideos.deleteVideo(id);
+      getVideos.getVideos().then(function(data){
+        console.log("videos data",data);
+        $scope.videos = data.data;
+      });
     }
 
   })
