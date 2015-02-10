@@ -13,7 +13,21 @@ angular.module('weatherAppApp')
       getVideos.deleteVideo(id);
       getVideos.getVideos().then(function(data){
         console.log("videos data",data);
+        alert("deleted successfully!");
         $scope.videos = data.data;
+        if(data.status!=200){
+          tick();
+        }
+      });
+    }
+
+    function tick(){
+      getVideos.getVideos().then(function(data){
+        console.log("videos data",data);
+        $scope.videos = data.data;
+        if(data.status!=200){
+          tick();
+        }
       });
     }
 
