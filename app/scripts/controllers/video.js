@@ -11,14 +11,14 @@ angular.module('weatherAppApp')
       return;
 
       getVideos.deleteVideo(id);
-      getVideos.getVideos().then(function(data){
-        console.log("videos data",data);
-        alert("deleted successfully!");
-        $scope.videos = data.data;
-        if(data.status!=200){
-          tick();
+      var videos = [];
+      $scope.videos.forEach(function(video){
+        if(video._id != id){
+          videos.push(video);
         }
       });
+      alert("deleted successfully!");
+      $scope.videos = videos;
     }
 
     function tick(){
