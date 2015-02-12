@@ -16,6 +16,15 @@ body
 
 }
 
+
+.billboard{
+     position:absolute;
+     z-index:15;
+     top:50%;
+     left:45%;
+     margin:-100px 0 0 -150px;
+}
+
 /*----- Logo & Nav -----*/
 
 .top
