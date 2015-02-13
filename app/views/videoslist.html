@@ -1,6 +1,8 @@
 <div class="container billboard light">
+<video id="video" controls="" autoplay="" name="media"><source src="" type="video/webm"></video>
 <H1>List Of Videos</H1>
 <div ng-repeat="item in videos">
   <a href={{rootUrl+"/videos/"+item._id}}>{{item.filename}}</a> <button ng-click="deleteVideo(item._id)"><img ng-src="../images/body/x.png"/></button>
+  <button ng-click="playvideo(item._id)">Play</button>
 </div>
 </div>

@@ -1,5 +1,5 @@
 angular.module('weatherAppApp')
-  .controller('VideosCtrl', function ($scope,$http,$location, getVideos) {
+  .controller('VideosCtrl', function ($scope,$http,$location, getVideos,$rootScope) {
 
     getVideos.getVideos().then(function(data){
       console.log("videos data",data);
@@ -19,6 +19,11 @@ angular.module('weatherAppApp')
       });
       alert("deleted successfully!");
       $scope.videos = videos;
+    }
+
+    $scope.playvideo = function(id){
+      var video = document.getElementById("video");
+      video.src = $rootScope.rootUrl+"/videos/"+id;
     }
 
     function tick(){
