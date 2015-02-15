@@ -143,7 +143,9 @@ app.get('/merge',function(req,res){
                 res.statusCode = 404;
                 res.end();
             } else {
-                res.statusCode = 200;
+                fs.unlink('./dist/test.webm',function(){
+                  exec('ffmpeg -f concat -i input.txt -codec copy ./dist/test.webm');
+                })
             }
         }); 
       }

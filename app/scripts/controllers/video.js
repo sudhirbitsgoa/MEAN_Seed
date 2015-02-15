@@ -26,6 +26,10 @@ angular.module('weatherAppApp')
       video.src = $rootScope.rootUrl+"/videos/"+id;
     }
 
+    $scope.mergeVideos = function(){
+      getVideos.mergeVideo();
+    }
+
     function tick(){
       getVideos.getVideos().then(function(data){
         console.log("videos data",data);
@@ -56,6 +60,15 @@ angular.module('weatherAppApp')
         $http.defaults.headers['X-CSRFToken'] = $cookies.csrftoken;
         return $http({method:"DELETE",url:url+id}).success(function(data){
           return data
+        }).error(function(err){
+          return err;
+        })
+      },
+
+      mergeVideo : function(){
+        var url = $rootScope.rootUrl + '/merge';
+        return $http({method:'GET',url:url}).success(function(data){
+          return data;
         }).error(function(err){
           return err;
         })
