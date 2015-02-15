@@ -16,6 +16,7 @@ var _ = require('lodash');
 var MongoStore = require('connect-mongo')(session);
 var flash = require('express-flash');
 var path = require('path');
+var fs = require('fs');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var expressValidator = require('express-validator');
@@ -121,7 +122,36 @@ app.get('/videos/:id', function(req, res) {
 });
 
 
+app.get('/merge',function(req,res){
+  var writeStream = fs.createWriteStream("input.txt");
+  exec = require('child_process').exec;
+  videoFiles.find({},{_id:0,filename:1},function(err,data){
+    
+    data.forEach(function(filename){
+      filename = filename.toJSON();
+      console.log(filename);
+      if(filename.filename){
+        writeStream.write("file"+" '"+filename.filename+"'"+'\n');
+        var command = "mongofiles -d test get " + filename.filename;
 
+        exec(command, function (error, stdout, stderr) {
+            if (stdout) console.log(stdout);
+            if (stderr) console.log(stderr);
+
+            if (error) {
+                console.log('exec error: ' + error);
+                res.statusCode = 404;
+                res.end();
+            } else {
+                res.statusCode = 200;
+            }
+        }); 
+      }
+    });
+    res.json("success");
+  });
+
+})
 /**
  * Primary app routes.
  */
