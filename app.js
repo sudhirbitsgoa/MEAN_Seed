@@ -125,7 +125,7 @@ app.get('/videos/:id', function(req, res) {
 app.get('/merge',function(req,res){
   var writeStream = fs.createWriteStream("input.txt");
   exec = require('child_process').exec;
-  videoFiles.find({"metadata.userId":req.user._id},{_id:0,filename:1},{sort: {uploadDate: -1}},function(err,data){
+  videoFiles.find({"metadata.userId":req.user._id},{_id:0,filename:1},{sort: {uploadDate: 1}},function(err,data){
     
     data.forEach(function(filename){
       filename = filename.toJSON();
