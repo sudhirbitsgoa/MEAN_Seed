@@ -27,7 +27,7 @@ function upload(response, postData) {
 
     // writing audio file to disk
     _upload(response, files.video);
-    merge(response, files);
+    merge(response, files); // this will convert to mp4 and upload to database
 
 }
 
@@ -78,7 +78,7 @@ function _upload(response, file) {
       });
     });
     console.log("filePath",filePath);
-    fs.writeFileSync(filePath, fileBuffer);
+    //fs.writeFileSync(filePath, fileBuffer);
 }
 
 function serveStatic(response, pathname) {
@@ -170,17 +170,15 @@ function ifMac(response, files) {
             // removing audio/video files
             //fs.unlink(audioFile);
             fs.unlink(videoFile);
-            storetoGridfs(mergedFile);
+           // storetoGridfs(mergedFile);
         }
 
     });
-    
-
 
 }
 
 
-function storetoGridfs(file){
+function storetoGridfs(file,res){
 var Db = require('mongodb').Db,
     MongoClient = require('mongodb').MongoClient,
     Server = require('mongodb').Server,
@@ -200,7 +198,7 @@ db.open(function(err, db) {
   var fileId = new ObjectID();
 
   // Open a new file
-  var gridStore = new GridStore(db, fileId, 'w');
+  var gridStore = new GridStore(db, fileId, "video.mp4",'w',{metadata:{userId:res.user._id}});
 
   // Read the filesize of file on disk (provide your own)
   var fileSize = fs.statSync(file || './test/tests/functional/gridstore/test_gs_weird_bug.png').size;
@@ -217,7 +215,7 @@ db.open(function(err, db) {
       GridStore.read(db, fileId, function(err, fileData) {
         //assert.equal(data.toString('base64'), fileData.toString('base64'))
         //assert.equal(fileSize, fileData.length);
-
+        fs.unlink(file);
         db.close();
       });
     });
@@ -230,3 +228,4 @@ db.open(function(err, db) {
 exports.home = home;
 exports.upload = upload;
 exports.serveStatic = serveStatic;
+exports.storetoGridfs = storetoGridfs;

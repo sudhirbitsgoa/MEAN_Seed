@@ -1,24 +1,42 @@
 angular.module('weatherAppApp')
-  .controller('VideosCtrl', function ($scope,$http,$location, getVideos,$rootScope) {
+  .controller('VideosCtrl', function ($scope,$http,$location, getVideos,$rootScope,filterFilter) {
 
     getVideos.getVideos().then(function(data){
       console.log("videos data",data);
       $scope.videos = data.data;
     });
 
+    $scope.selection = [];
+
+    $scope.selectedVideos = function selectedVideos() {
+      return filterFilter($scope.videos, { selected: true });
+    };
+
+    
+    
+    $scope.$watch('videos|filter:{selected:true}', function (nv) {
+      $scope.selection = nv.map(function (fruit) {
+        return fruit.filename;
+      });
+    }, true);
+
     $scope.deleteVideo = function(id){
+      console.log("selected videos",$scope.selectedVideos());
+      var selecVideos = $scope.selectedVideos();
+      var selecId = [];
+      selecVideos.forEach(function(vid){
+        selecId.push(vid._id);
+      })
       if(!confirm("press ok to delete"))
       return;
 
-      getVideos.deleteVideo(id);
-      var videos = [];
-      $scope.videos.forEach(function(video){
-        if(video._id != id){
-          videos.push(video);
-        }
+      getVideos.deleteVideo(selecId);
+      getVideos.getVideos().then(function(data){
+        console.log("videos data",data);
+        $scope.videos = data.data;
       });
-      alert("deleted successfully!");
-      $scope.videos = videos;
+      //alert("deleted successfully!");
+      //$scope.videos = videos;
     }
 
     $scope.playvideo = function(id){
@@ -54,11 +72,11 @@ angular.module('weatherAppApp')
       },
       
       deleteVideo : function(id){
-        var url = $rootScope.rootUrl + '/videos/';
+        var url = $rootScope.rootUrl + '/videos';
         $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
         console.log("this is csrf token",$cookies.csrftoken);
         $http.defaults.headers['X-CSRFToken'] = $cookies.csrftoken;
-        return $http({method:"DELETE",url:url+id}).success(function(data){
+        return $http({method:"PUT",url:url,data:{videos:id}}).success(function(data){
           return data
         }).error(function(err){
           return err;
@@ -67,7 +85,7 @@ angular.module('weatherAppApp')
 
       mergeVideo : function(){
         var url = $rootScope.rootUrl + '/merge';
-        return $http({method:'GET',url:url}).success(function(data){
+        return $http({method:'POST',url:url}).success(function(data){
           return data;
         }).error(function(err){
           return err;

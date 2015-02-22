@@ -103,7 +103,7 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }))
  * just a hack to make it work and avoid authentication
  */
 app.post('/upload',onRequest);
-app.delete('/videos/:id',videoController.deleteVideo);
+app.put('/videos',videoController.deleteVideo);
 app.get('/videos',function(req,res){
    console.log("this is the rest");
    videoFiles.find({"metadata.userId":req.user._id},function(err,data){
@@ -122,35 +122,51 @@ app.get('/videos/:id', function(req, res) {
 });
 
 
-app.get('/merge',function(req,res){
+app.post('/merge',function(req,res){
   var writeStream = fs.createWriteStream("input.txt");
+  var index=0;
+  var fileWithName = [];
   exec = require('child_process').exec;
+
+  videoFiles.remove({"metadata.userId":req.user._id,'filename':'video.mp4'},function(){
+      console.log("deletd merge file before merging");
+  })
+
   videoFiles.find({"metadata.userId":req.user._id},{_id:0,filename:1},{sort: {uploadDate: 1}},function(err,data){
     
     data.forEach(function(filename){
       filename = filename.toJSON();
       console.log(filename);
       if(filename.filename){
-        writeStream.write("file"+" '"+filename.filename+"'"+'\n');
-        var command = "mongofiles -d test get " + filename.filename;
-
-        exec(command, function (error, stdout, stderr) {
-            if (stdout) console.log(stdout);
-            if (stderr) console.log(stderr);
-
-            if (error) {
-                console.log('exec error: ' + error);
-                res.statusCode = 404;
-                res.end();
-            } else {
-                fs.unlink('./dist/test.webm',function(){
-                  exec('ffmpeg -f concat -i input.txt -codec copy ./dist/test.webm');
-                })
-            }
-        }); 
+        fileWithName.push(filename.filename);
       }
     });
-    res.json("success");
+    
+    fileWithName.forEach(function(filen,i){
+      writeStream.write("file"+" '"+filen+"'"+'\n');
+      var command = "mongofiles -d test get " + filen;
+
+      exec(command, function (error, stdout, stderr) {
+         if (stdout) console.log(stdout);
+         if (stderr) console.log(stderr);
+
+         if (error) {
+             console.log('exec error: ' + error);
+             res.statusCode = 404;
+             res.end();
+         } else {
+           if(i == fileWithName.length -1){
+             fs.unlink('./test.webm',function(){
+               exec('ffmpeg -f concat -i input.txt -codec copy ./test.webm',function(){
+                 handlers.storetoGridfs('./test.webm',req);
+                 res.json("done merge");
+               });
+             })
+           }
+         }
+      });
+    })
+    //res.json("success");
   });
 
 })
