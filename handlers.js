@@ -151,30 +151,6 @@ function ifMac(response, files) {
         //-qscale 0 
     var command = "ffmpeg -i " + videoFile + " -qscale 0 " + mergedFile;
 
-    exec(command, function (error, stdout, stderr) {
-        if (stdout) console.log(stdout);
-        if (stderr) console.log(stderr);
-
-        if (error) {
-            console.log('exec error: ' + error);
-            response.statusCode = 404;
-            response.end();
-
-        } else {
-            response.statusCode = 200;
-            response.writeHead(200, {
-                'Content-Type': 'application/json'
-            });
-            response.end(files.video.name.split('.')[0] + '-merged.mp4');
-
-            // removing audio/video files
-            //fs.unlink(audioFile);
-            fs.unlink(videoFile);
-           // storetoGridfs(mergedFile);
-        }
-
-    });
-
 }
 
 
