@@ -9,8 +9,14 @@
  */
 angular.module('weatherAppApp')
 //        $scope.city = "";
-    .controller('MainCtrl', function () {
+    .controller('MainCtrl', function ($scope,$http,$location, getVideos,$rootScope) {
         console.log("in dot square");
+        $scope.stopRecording = function(){
+            getVideos.mergeVideo();
+        }
+        $scope.mergeVideos = function(){
+            getVideos.mergeVideo();
+        }
 
     })
     .directive('slider',function(){
@@ -57,5 +63,5 @@ angular.module('weatherAppApp')
                 console.log("in my-slider dir");
             }
         };
-    });
+    })
 

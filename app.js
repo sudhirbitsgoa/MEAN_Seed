@@ -106,7 +106,7 @@ app.post('/upload',onRequest);
 app.put('/videos',videoController.deleteVideo);
 app.get('/videos',function(req,res){
    console.log("this is the rest");
-   videoFiles.find({"metadata.userId":req.user._id},function(err,data){
+   videoFiles.find({"metadata.userId":req.user._id,'filename':'video.mp4'},{},{sort: {uploadDate: 1}},function(err,data){
      res.json(data);
    });
 })
@@ -128,11 +128,11 @@ app.post('/merge',function(req,res){
   var fileWithName = [];
   exec = require('child_process').exec;
 
-  videoFiles.remove({"metadata.userId":req.user._id,'filename':'video.mp4'},function(){
+/**  videoFiles.remove({"metadata.userId":req.user._id,'filename':'video.mp4'},function(){
       console.log("deletd merge file before merging");
   })
-
-  videoFiles.find({"metadata.userId":req.user._id},{_id:0,filename:1},{sort: {uploadDate: 1}},function(err,data){
+**/
+  videoFiles.find({"metadata.userId":req.user._id,filename:{$ne:'video.mp4'}},{_id:0,filename:1},{sort: {uploadDate: 1}},function(err,data){
     
     data.forEach(function(filename){
       filename = filename.toJSON();
