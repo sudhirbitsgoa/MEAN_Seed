@@ -6,7 +6,7 @@
 
 <div ng-repeat="item in videos">
   <input type="checkbox" name="selectedVideos[]" value="{{item.filename}}" ng-model="item.selected">
-  <a href={{rootUrl+"/videos/"+item._id}}>{{item.filename}}</a> 
-  <button ng-click="playvideo(item._id)">Play</button>
+  <a ng-click="playvideo(item._id)">{{item.filename}}</a>&nbsp&nbsp&nbsp
+  <a href={{rootUrl+"/videos/"+item._id}}><u>download</u></a> 
 </div>
 </div>
