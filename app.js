@@ -340,7 +340,7 @@ function onRequest(request, response) {
         postData = '';
 
     request.setEncoding('utf8');
-
+    response.json("success");
     request.addListener('data', function(postDataChunk) {
         postData += postDataChunk;
     });

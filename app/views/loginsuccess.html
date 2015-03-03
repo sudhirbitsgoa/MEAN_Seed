@@ -11,7 +11,6 @@ input {
   text-align: center;
 }
 </style>
-</script><script src="https://cdn.webrtc-experiment.com/msr/AudioStreamRecorder/MediaRecorder.js">
 </script>
 
 <script>
@@ -160,38 +159,38 @@ if (!scriptTag.getAttribute('data-manual')) {
     }
 
     // cross-browser getUserMedia/AudioContext declarations
-    loadScript('common/Cross-Browser-Declarations.js');
+    //loadScript('common/Cross-Browser-Declarations.js');
 
     requiredScripts.trim().toLowerCase().split(',').forEach(function(script) {
         if (script == 'stereorecorder') {
             // stores AudioContext-level objects in memory for re-usability purposes
-            loadScript('common/ObjectStore.js');
+            ////loadScript('common/ObjectStore.js');
 
             // both these files are used to support audio recording in chrome
-            loadScript('AudioStreamRecorder/StereoRecorder.js');
-            loadScript('AudioStreamRecorder/StereoAudioRecorder.js');
+            ////loadScript('AudioStreamRecorder/StereoRecorder.js');
+            ////loadScript('AudioStreamRecorder/StereoAudioRecorder.js');
         }
 
         if (script == 'mediarecorder') {
             // this one uses MediaRecorder draft for voice & video recording (works only in Firefox)
-            loadScript('AudioStreamRecorder/MediaRecorder.js');
+            //loadScript('AudioStreamRecorder/MediaRecorder.js');
         }
 
         if (script == 'whammyrecorder') {
             // these files are supporting video-recording in chrome (webm)
-            loadScript('VideoStreamRecorder/WhammyRecorder.js');
-            loadScript('VideoStreamRecorder/WhammyRecorderHelper.js');
-            loadScript('VideoStreamRecorder/lib/whammy.js');
+            //loadScript('VideoStreamRecorder/WhammyRecorder.js');
+            //loadScript('VideoStreamRecorder/WhammyRecorderHelper.js');
+            //loadScript('VideoStreamRecorder/lib/whammy.js');
         }
 
         if (script == 'gifrecorder') {
             // these files are used to support gif-recording in both chrome & firefox
-            loadScript('VideoStreamRecorder/GifRecorder.js');
-            loadScript('VideoStreamRecorder/lib/gif-encoder.js');
+            //loadScript('VideoStreamRecorder/GifRecorder.js');
+            //loadScript('VideoStreamRecorder/lib/gif-encoder.js');
         }
         
         if(script == 'multistreamrecorder') {
-            loadScript('MultiStreamRecorder.js');
+            //loadScript('MultiStreamRecorder.js');
         }
     });
 }
@@ -547,9 +546,7 @@ function getTimeLength(milliseconds) {
   return data.getUTCHours()+" hours, "+data.getUTCMinutes()+" minutes and "+data.getUTCSeconds()+" second(s)";
 }
 
-window.onbeforeunload = function() {
-  document.querySelector('#start-recording').disabled = false;
-};
+
 </script>
 
 
